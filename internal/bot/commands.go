@@ -20,8 +20,8 @@ func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error
 	}
 
 	if commandMsg == "fetch all" {
-		allPosts := filter.AllPosts(logger, posts)
-		err = telegram.SendPosts(c, logger, allPosts)
+		filter.OrderPostsByDate(posts)
+		err = telegram.SendPosts(c, logger, posts)
 		if err != nil {
 			return err
 		}
