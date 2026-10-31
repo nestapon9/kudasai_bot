@@ -8,7 +8,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func CommandRun(logger *slog.Logger, c telegram.Client) error {
+func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error {
 	timeNewsMarker, err := filter.GetTimeMarker(logger)
 	if err != nil {
 		return err
@@ -17,6 +17,15 @@ func CommandRun(logger *slog.Logger, c telegram.Client) error {
 	posts, err := feed.Feed(c.Clt, logger)
 	if err != nil {
 		return err
+	}
+
+	if commandMsg == "fetch all" {
+		allPosts := filter.AllPosts(logger, posts)
+		err = telegram.SendPosts(c, logger, allPosts)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	filteredPosts := filter.FilterByCategory(posts)

@@ -92,11 +92,14 @@ loop:
 					continue
 				}
 
-				if strings.ToLower(mostRecentMsg.Message.Text) != "fetch" {
+				CommandMsg := strings.ToLower(mostRecentMsg.Message.Text)
+
+				if CommandMsg != "fetch" && CommandMsg != "fetch all" {
 					c.SendMessage(logger, feed.Post{}, "Command not recongnize")
 					continue
 				}
-				if err := CommandRun(logger, c); err != nil {
+
+				if err := CommandRun(logger, c, CommandMsg); err != nil {
 					state.NewLogError(logger, time.Now(), "Error serving posts", err)
 					offset = mostRecentMsg.UpdateID
 					time.Sleep(retryTime)
