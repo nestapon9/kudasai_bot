@@ -21,7 +21,7 @@ func Fetch(c telegram.Client, logger *slog.Logger, t time.Time, posts []feed.Pos
 		return nil
 	}
 
-	err := telegram.SendPosts(c, logger, posts)
+	err := telegram.SendPosts(c, logger, lastestPosts)
 	if err != nil {
 		return err
 	}
