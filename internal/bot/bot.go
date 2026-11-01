@@ -94,7 +94,7 @@ loop:
 
 				CommandMsg := strings.ToLower(mostRecentMsg.Message.Text)
 
-				if CommandMsg != "fetch" && CommandMsg != "fetch all" {
+				if CommandMsg != "fetch" && CommandMsg != "fetch all" && CommandMsg != "reset" {
 					c.SendMessage(logger, feed.Post{}, "Command not recongnize")
 					continue
 				}

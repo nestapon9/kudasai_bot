@@ -30,7 +30,7 @@ func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error
 			return err
 		}
 	case "reset":
-		if err := commands.Reset(); err != nil {
+		if err := commands.Reset(c, logger); err != nil {
 			return err
 		}
 	}
