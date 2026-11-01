@@ -3,6 +3,7 @@ package bot
 import (
 	"log/slog"
 
+	"github.com/arturogood17/kudasai_bot/internal/commands"
 	"github.com/arturogood17/kudasai_bot/internal/feed"
 	"github.com/arturogood17/kudasai_bot/internal/filter"
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
@@ -19,29 +20,19 @@ func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error
 		return err
 	}
 
-	if commandMsg == "fetch all" {
-		filter.OrderPostsByDate(posts)
-		err = telegram.SendPosts(c, logger, posts)
-		if err != nil {
+	switch commandMsg {
+	case "fetch":
+		if err := commands.Fetch(c, logger, timeNewsMarker, posts); err != nil {
 			return err
 		}
-		return nil
-	}
-
-	filteredPosts := filter.FilterByCategory(posts)
-
-	filter.OrderPostsByDate(filteredPosts)
-
-	lastestPosts := filter.FilterByDate(logger, timeNewsMarker, filteredPosts)
-	if len(lastestPosts) == 0 {
-		logger.Info("Nothing to fetch")
-		c.SendMessage(logger, feed.Post{}, "Nothing to fetch")
-		return nil
-	}
-
-	err = telegram.SendPosts(c, logger, lastestPosts)
-	if err != nil {
-		return err
+	case "fetch all":
+		if err := commands.FetchAll(c, logger, posts); err != nil {
+			return err
+		}
+	case "reset":
+		if err := commands.Reset(); err != nil {
+			return err
+		}
 	}
 
 	return nil
