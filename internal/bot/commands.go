@@ -21,15 +21,15 @@ func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error
 	}
 
 	switch commandMsg {
-	case "fetch":
+	case "/fetch":
 		if err := commands.Fetch(c, logger, timeNewsMarker, posts); err != nil {
 			return err
 		}
-	case "fetch all":
+	case "/all":
 		if err := commands.FetchAll(c, logger, posts); err != nil {
 			return err
 		}
-	case "reset":
+	case "/reset":
 		if err := commands.Reset(c, logger); err != nil {
 			return err
 		}
