@@ -59,11 +59,13 @@ Then, you have two options:
 
 Once the bot is running, open the chat with your bot in Telegram and send one of the following commands:
 
-- `fetch`: The bot will reply with the latest news from SomosKudasai (filtered by anime/manga/light novels).
-- `fetch all`: The bot will reply with all the news from SomosKudasai (without filtering).
-- `reset`: Clears the log file of already-sent news, so the filtered news can be fetched again.
+- `/fetch`: The bot will reply with the latest news from SomosKudasai (filtered by anime/manga/light novels).
+- `/all`: The bot will reply with all the news from SomosKudasai (without filtering).
+- `/reset`: Clears the log file of already-sent news, so the filtered news can be fetched again.
 
 Each news item is sent as a message with its image, title, and link.
+
+If you [add commands your bot](https://www.youtube.com/watch?v=b9a9d01w7QI), it will create a type of menu where you can choose the option you prefer.
 
 Right now it fetches the news of the following categories:
 
