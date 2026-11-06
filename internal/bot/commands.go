@@ -15,7 +15,7 @@ func CommandRun(logger *slog.Logger, c telegram.Client, commandMsg string) error
 		return err
 	}
 
-	posts, err := feed.Feed(c.Clt, logger)
+	posts, err := feed.Feed[feed.RSS](c.Clt, logger) //For now, the logic uses RSS. This needs to change depending on the site to get updates from.
 	if err != nil {
 		return err
 	}
