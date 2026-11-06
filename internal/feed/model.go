@@ -31,3 +31,19 @@ type RSS struct {
 		} `xml:"item"`
 	} `xml:"channel"`
 }
+
+type AtomFeed struct {
+	Entry []struct {
+		Title struct {
+			Text string `xml:",chardata"`
+		} `xml:"title"`
+		Link struct {
+			Href string `xml:"href,attr"`
+		} `xml:"link"`
+		Published time.Time `xml:"published"`
+		Category  struct {
+			Term string `xml:"term,attr"`
+		} `xml:"category"`
+		Cmssection string `xml:"cmssection"`
+	} `xml:"entry"`
+}
