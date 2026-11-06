@@ -11,7 +11,8 @@ import (
 )
 
 const URL = "https://api.telegram.org/bot"
-const FEED = "https://somoskudasai.com/noticias/feed/"
+const KUDASAIFEED = "https://somoskudasai.com/noticias/feed/"
+const ANNFEED = "https://www.animenewsnetwork.com/all/atom.xml?ann-edition=w"
 const ERRORFILEPATH = "ErrorFile.log"
 const LOGFILEPATH = "LogInfoFile.log"
 const DATA = "data"
