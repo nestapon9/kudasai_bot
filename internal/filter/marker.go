@@ -18,7 +18,7 @@ func OrderPostsByDate(posts []feed.Post) {
 	})
 }
 
-func readLogs() ([]map[string]any, error) {
+func readLogs() ([]map[string]any, error) { //Tiene que cambiar y aceptar argumento por storeFeed
 	logFile, err := config.OpenOrCreateLogFile(config.LOGFILEPATH)
 	if err != nil {
 		return nil, err
