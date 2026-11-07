@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 	"unicode/utf8"
 
@@ -16,14 +17,16 @@ import (
 )
 
 type Client struct {
-	Clt     *http.Client
-	Ctx     context.Context
-	Token   string
-	Chat_id int
+	Clt          *http.Client
+	Ctx          context.Context
+	Token        string
+	Chat_id      int
+	StateKudasai *os.File
+	StateAnn     *os.File
 }
 
-func New(ctx context.Context, c *config.Config) Client {
-	return Client{
+func New(ctx context.Context, c *config.Config) *Client {
+	return &Client{
 		Token:   c.TOKEN_ID,
 		Chat_id: c.CHAT_ID,
 		Clt:     &http.Client{Timeout: 45 * time.Second},
