@@ -15,6 +15,10 @@ const KUDASAIFEED = "https://somoskudasai.com/noticias/feed/"
 const ANNFEED = "https://www.animenewsnetwork.com/all/atom.xml?ann-edition=w"
 const ERRORFILEPATH = "ErrorFile.log"
 const LOGFILEPATH = "LogInfoFile.log"
+const STATEKUDASAI = "state_kudasai.json"
+const STATEANN = "state_animenetwork.json"
+const INTERNAL = "internal"
+const LOGS = "logs"
 const DATA = "data"
 
 type Config struct {
@@ -38,7 +42,7 @@ func Load(logger *slog.Logger) *Config {
 	return config
 }
 
-func OpenOrCreateLogFile(filename string) (*os.File, error) {
+func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
