@@ -10,7 +10,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func Reset(c telegram.Client, logger *slog.Logger) error {
+func Reset(c *telegram.Client, logger *slog.Logger) error {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err

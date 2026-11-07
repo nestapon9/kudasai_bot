@@ -9,7 +9,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func Fetch(c telegram.Client, logger *slog.Logger, t time.Time, posts []feed.Post) error {
+func Fetch(c *telegram.Client, logger *slog.Logger, t time.Time, posts []feed.Post) error {
 	filteredPosts := filter.FilterByCategory(posts)
 
 	filter.OrderPostsByDate(filteredPosts)

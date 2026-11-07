@@ -12,7 +12,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/state"
 )
 
-func SendPosts(c Client, logger *slog.Logger, posts []feed.Post) error {
+func SendPosts(c *Client, logger *slog.Logger, posts []feed.Post) error {
 	numPosts := len(posts)
 	i := 0
 	for ; i <= numPosts-1; i++ {

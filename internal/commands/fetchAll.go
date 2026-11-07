@@ -8,7 +8,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func FetchAll(c telegram.Client, logger *slog.Logger, posts []feed.Post) error {
+func FetchAll(c *telegram.Client, logger *slog.Logger, posts []feed.Post) error {
 	filter.OrderPostsByDate(posts)
 	err := telegram.SendPosts(c, logger, posts)
 	if err != nil {
