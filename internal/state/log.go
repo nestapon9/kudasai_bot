@@ -61,10 +61,6 @@ func NewLogError(logger *slog.Logger, t time.Time, message string, err error) {
 	logger.Error(message, "Date", t, "Error", err)
 }
 
-func NewLogPostSuccess(logger *slog.Logger, t time.Time, PubDate time.Time, message string) {
-	logger.Info(message, "Date", t, "Publication_Date", PubDate)
-}
-
 func NewLogClosedInfo(logger *slog.Logger, t time.Time, message string, err error) {
 	logger.Info(message, "Time_of_close", t, "Cause", err)
 }
