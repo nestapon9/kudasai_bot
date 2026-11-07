@@ -26,15 +26,18 @@ func Feed[T RSS | AtomFeed](c *http.Client, logger *slog.Logger) ([]Post, error)
 
 	defer resp.Body.Close()
 
-	return Posts(logger, feed), err
+	posts, totalNews := Posts(logger, feed)
+	logger.Info("Feed fetched", "Total news fetched", totalNews)
 
+	return posts, nil
 }
 
-func Posts(logger *slog.Logger, posts any) []Post {
+func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 	var P []Post
 	if rss, ok := posts.(RSS); ok {
 		for _, p := range rss.Channel.Item {
 			np := Post{
+				ID:       p.Link,
 				Title:    p.Title,
 				URL:      p.Link,
 				PubDate:  PubDateParser(logger, p.PubDate, p.Title, time.RFC1123Z),
@@ -43,11 +46,12 @@ func Posts(logger *slog.Logger, posts any) []Post {
 			}
 			P = append(P, np)
 		}
-		return P
+		return P, len(P)
 	}
 	atom, _ := posts.(AtomFeed)
 	for _, p := range atom.Entry {
 		np := Post{
+			ID:       p.ID.Text,
 			Title:    p.Title.Text,
 			URL:      p.Link.Href,
 			PubDate:  p.Published,
@@ -56,5 +60,5 @@ func Posts(logger *slog.Logger, posts any) []Post {
 		}
 		P = append(P, np)
 	}
-	return P
+	return P, len(P)
 }
