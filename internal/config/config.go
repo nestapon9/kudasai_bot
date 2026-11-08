@@ -47,7 +47,10 @@ func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error)
 	if err != nil {
 		return nil, err
 	}
-	FileCreation := path.Join(cwd, DATA, filename)
+	if err := os.MkdirAll(path.Join(cwd, parentFolder), 0750); err != nil {
+		return nil, err
+	}
+	FileCreation := path.Join(cwd, parentFolder, filename)
 	File, err := os.OpenFile(FileCreation, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0o644)
 	if err != nil {
 		return nil, err
