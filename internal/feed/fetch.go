@@ -11,10 +11,17 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/state"
 )
 
-func Feed[T RSS | AtomFeed](c *http.Client, logger *slog.Logger) ([]Post, error) {
+func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logger) ([]Post, error) {
 	var feed T
 	logger.Info("Feetching started", "Date_fetching_started", time.Now())
-	resp, err := c.Get(config.KUDASAIFEED)
+	var urlfeed string
+	switch storeFeed {
+	case "/kudasai":
+		urlfeed = config.KUDASAIFEED
+	case "/animenetwork":
+		urlfeed = config.ANNFEED
+	}
+	resp, err := c.Get(urlfeed)
 	if err != nil {
 		state.NewLogError(logger, time.Now(), "Unable to obtain Kudasai feed", err)
 		return nil, err
