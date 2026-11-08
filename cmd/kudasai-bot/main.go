@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ErrorFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.LOGFILEPATH)
+	ErrorFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.ERRORFILEPATH)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the error logging file: %v\n", err)
 		os.Exit(1)
