@@ -34,17 +34,19 @@ func New(ctx context.Context, c *config.Config) *Client {
 	}
 }
 
-func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message string) error {
+func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedStore string) error {
 	type content struct {
-		Text    string `json:"text"`
-		Chat_ID int    `json:"chat_id"`
+		Text      string `json:"text"`
+		Chat_ID   int    `json:"chat_id"`
+		ParseMode string `json:"parse_mode"`
 	}
 
 	URL := fmt.Sprintf("%v%v/sendMessage", config.URL, c.Token)
 
 	payload := content{
-		Text:    message,
-		Chat_ID: c.Chat_id,
+		Text:      message,
+		Chat_ID:   c.Chat_id,
+		ParseMode: "HTML",
 	}
 
 	resp, err := RequestSending(c, context.Background(), URL, "POST", payload)
@@ -54,15 +56,38 @@ func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message string
 	}
 
 	if post != (feed.Post{}) {
-		LogPostSentAndMarker(logger, time.Now(), post)
+		switch feedStore {
+		case "/kudasai":
+			state.WriteStateFile(c.StateKudasai, logger, map[string]any{
+				"feed": feedStore,
+				"sent": []map[string]any{
+					{
+						"id":  post.ID,
+						"pub": post.PubDate,
+					},
+				},
+			})
+		case "/animenetwork":
+			state.WriteStateFile(c.StateAnn, logger, map[string]any{
+				"feed": feedStore,
+				"sent": []map[string]any{
+					{
+						"id":  post.ID,
+						"pub": post.PubDate,
+					},
+				},
+			})
+		}
 	}
+
+	logger.Info("Sending posts", "Sent", fmt.Sprintf("%v/%v", post.PostNum+1, post.TotalPost))
 
 	defer resp.Body.Close()
 
 	return nil
 }
 
-func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post) error {
+func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post, feedStore string) error {
 	type content struct {
 		Photo     string `json:"photo"`
 		Caption   string `json:"caption"`
@@ -92,7 +117,15 @@ func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post) error {
 	}
 
 	if post != (feed.Post{}) {
-		LogPostSentAndMarker(logger, time.Now(), post)
+		state.WriteStateFile(c.StateKudasai, logger, map[string]any{
+			"feed": feedStore,
+			"sent": []map[string]any{
+				{
+					"id":  post.ID,
+					"pub": post.PubDate,
+				},
+			},
+		})
 	}
 
 	defer resp.Body.Close()
@@ -128,9 +161,4 @@ func RequestSending(c *Client, ctx context.Context, URL string, method string, p
 		return nil, err
 	}
 	return resp, nil
-}
-
-func LogPostSentAndMarker(logger *slog.Logger, t time.Time, p feed.Post) {
-	state.NewLogPostSuccess(logger, time.Now(), p.PubDate, fmt.Sprintf("Sent %d/%d. Last sent (title) {%s}", p.PostNum+1, p.TotalPost, p.Title))
-	state.Marker(logger, p.Title, p.PubDate)
 }
