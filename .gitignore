@@ -2,3 +2,4 @@
 *.md
 /data
 kudasai_bot
+/internal/logs
