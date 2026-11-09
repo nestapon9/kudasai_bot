@@ -42,7 +42,7 @@ func Load(logger *slog.Logger) *Config {
 	return config
 }
 
-func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error) {
+func OpenOrCreateLogFile(parentFolder string, filename string, flags int) (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error)
 		return nil, err
 	}
 	FileCreation := path.Join(cwd, parentFolder, filename)
-	File, err := os.OpenFile(FileCreation, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0o644)
+	File, err := os.OpenFile(FileCreation, flags, 0o644)
 	if err != nil {
 		return nil, err
 	}
