@@ -55,31 +55,6 @@ func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedS
 		return err
 	}
 
-	if post != (feed.Post{}) {
-		switch feedStore {
-		case "/kudasai":
-			state.WriteStateFile(c.StateKudasai, logger, map[string]any{
-				"feed": feedStore,
-				"sent": []map[string]any{
-					{
-						"id":  post.ID,
-						"pub": post.PubDate,
-					},
-				},
-			})
-		case "/animenetwork":
-			state.WriteStateFile(c.StateAnn, logger, map[string]any{
-				"feed": feedStore,
-				"sent": []map[string]any{
-					{
-						"id":  post.ID,
-						"pub": post.PubDate,
-					},
-				},
-			})
-		}
-	}
-
 	logger.Info("Sending posts", "Sent", fmt.Sprintf("%v/%v", post.PostNum+1, post.TotalPost))
 
 	defer resp.Body.Close()
@@ -114,18 +89,6 @@ func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post, feedStore string
 	if err != nil {
 		state.NewLogError(logger, time.Now(), "Error trying to send the request", nil)
 		return err
-	}
-
-	if post != (feed.Post{}) {
-		state.WriteStateFile(c.StateKudasai, logger, map[string]any{
-			"feed": feedStore,
-			"sent": []map[string]any{
-				{
-					"id":  post.ID,
-					"pub": post.PubDate,
-				},
-			},
-		})
 	}
 
 	defer resp.Body.Close()
