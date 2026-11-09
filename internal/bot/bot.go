@@ -87,15 +87,15 @@ loop:
 				mostRecentMsg := upd.Result[len(upd.Result)-1]
 				offset = mostRecentMsg.UpdateID + 1
 				if !messageAuth(mostRecentMsg.Message.From.ID, c.Chat_id) {
-					c.SendMessage(logger, feed.Post{}, "Unavailable")
+					c.SendMessage(logger, feed.Post{}, "Unavailable", "")
 					state.NewLogError(logger, time.Now(), "Invalid user attempt", nil)
 					continue
 				}
 
 				CommandMsg := strings.ToLower(mostRecentMsg.Message.Text)
 
-				if !strings.Contains(CommandMsg, "/kudasai") && !strings.Contains(CommandMsg, "/animenews") {
-					c.SendMessage(logger, feed.Post{}, "Command not recognize")
+				if !strings.Contains(CommandMsg, "/kudasai") && !strings.Contains(CommandMsg, "/animenetwork") {
+					c.SendMessage(logger, feed.Post{}, "Feed store not recognized", "")
 					continue
 				}
 
