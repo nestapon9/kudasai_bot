@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-func WriteStateFile(file *os.File, logger *slog.Logger, log map[string]any) {
-	data, err := json.Marshal(log)
+func WriteStateFile(file *os.File, logger *slog.Logger, logs []any) {
+	data, err := json.MarshalIndent(logs, "", "\t")
 	if err != nil {
 		logger.Error("Error trying to marshal state", "File", file.Name(), "Error", err)
 	}
