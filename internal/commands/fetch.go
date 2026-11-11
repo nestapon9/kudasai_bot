@@ -2,29 +2,28 @@ package commands
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/feed"
 	"github.com/arturogood17/kudasai_bot/internal/filter"
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func Fetch(c *telegram.Client, logger *slog.Logger, t time.Time, posts []feed.Post) error {
-	filteredPosts := filter.FilterByCategory(posts)
+func Fetch(c *telegram.Client, logger *slog.Logger, category, feedStore string, posts []feed.Post, feedState []filter.StateLog) error {
+	filteredPosts := filter.FilterByCategory(posts, category)
 
-	filter.OrderPostsByDate(filteredPosts)
-
-	lastestPosts := filter.FilterByDate(logger, t, filteredPosts)
+	lastestPosts := filter.FilterBySent(logger, filteredPosts, feedState)
 	if len(lastestPosts) == 0 {
 		logger.Info("Nothing to fetch")
-		c.SendMessage(logger, feed.Post{}, "Nothing to fetch")
+		c.SendMessage(logger, feed.Post{}, "Nothing to fetch", "")
 		return nil
 	}
 
-	err := telegram.SendPosts(c, logger, lastestPosts)
-	if err != nil {
+	filter.OrderPostsByDate(lastestPosts)
+
+	if err := telegram.SendPosts(c, logger, lastestPosts, feedStore); err != nil {
 		return err
 	}
 
 	return nil
+
 }

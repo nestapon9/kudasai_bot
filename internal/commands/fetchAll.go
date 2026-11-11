@@ -8,9 +8,15 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func FetchAll(c *telegram.Client, logger *slog.Logger, posts []feed.Post) error {
+func FetchAll(c *telegram.Client, logger *slog.Logger, posts []feed.Post, feedStore string, feedState []filter.StateLog) error {
 	filter.OrderPostsByDate(posts)
-	err := telegram.SendPosts(c, logger, posts)
+	if feedStore == "/animenetwork" {
+		if len(posts) > 20 {
+			posts = posts[len(posts)-21:]
+		}
+	}
+	toSent := filter.FilterBySent(logger, posts, feedState)
+	err := telegram.SendPosts(c, logger, toSent, feedStore)
 	if err != nil {
 		return err
 	}
