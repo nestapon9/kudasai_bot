@@ -12,6 +12,7 @@ type Post struct {
 	Title     string
 	URL       string
 	Category  string
+	Section   string
 	PhotoURL  string
 	PubDate   time.Time
 	TotalPost int

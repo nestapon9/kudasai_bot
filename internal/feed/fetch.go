@@ -2,9 +2,12 @@
 package feed
 
 import (
+	"bytes"
 	"encoding/xml"
+	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
@@ -26,8 +29,18 @@ func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logge
 		state.NewLogError(logger, time.Now(), "Unable to obtain Kudasai feed", err)
 		return nil, err
 	}
-	if err := xml.NewDecoder(resp.Body).Decode(&feed); err != nil {
-		state.NewLogError(logger, time.Now(), "Unable parse xml file", err)
+
+	dataBeforeProcessing, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	pattern := regexp.MustCompile(`&[[:alnum:]]+;|&`)
+
+	dataAfterProcessing := pattern.ReplaceAll(dataBeforeProcessing, []byte("&amp;"))
+	data := bytes.NewReader(dataAfterProcessing)
+
+	if err := xml.NewDecoder(data).Decode(&feed); err != nil {
 		return nil, err
 	}
 
@@ -63,6 +76,7 @@ func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 			URL:      p.Link.Href,
 			PubDate:  p.Published,
 			Category: p.Category.Term,
+			Section:  p.Cmssection,
 			PhotoURL: "",
 		}
 		P = append(P, np)
