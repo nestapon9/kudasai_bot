@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
@@ -61,7 +62,7 @@ func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 				Title:    p.Title,
 				URL:      p.Link,
 				PubDate:  PubDateParser(logger, p.PubDate, p.Title, time.RFC1123Z),
-				Category: p.Category,
+				Category: strings.ToLower(p.Category),
 				PhotoURL: p.Content.URL,
 			}
 			P = append(P, np)
@@ -75,7 +76,7 @@ func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 			Title:    p.Title.Text,
 			URL:      p.Link.Href,
 			PubDate:  p.Published,
-			Category: p.Category.Term,
+			Category: strings.ToLower(p.Category.Term),
 			Section:  p.Cmssection,
 			PhotoURL: "",
 		}
