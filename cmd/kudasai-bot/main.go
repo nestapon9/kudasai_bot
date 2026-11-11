@@ -17,25 +17,25 @@ import (
 
 func main() {
 
-	LogFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.LOGFILEPATH, os.O_APPEND|os.O_CREATE|os.O_RDWR)
+	LogFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.LOGFILEPATH)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the logging file: %v\n", err)
 		os.Exit(1)
 	}
 
-	ErrorFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.ERRORFILEPATH, os.O_APPEND|os.O_CREATE|os.O_RDWR)
+	ErrorFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.ERRORFILEPATH)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the error logging file: %v\n", err)
 		os.Exit(1)
 	}
 
-	kudasaiState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEKUDASAI, os.O_CREATE|os.O_RDWR)
+	kudasaiState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEKUDASAI)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the SomosKudasai state file: %v\n", err)
 		os.Exit(1)
 	}
 
-	annState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEANN, os.O_CREATE|os.O_RDWR)
+	annState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEANN)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the Anime Network state file: %v\n", err)
 		os.Exit(1)
