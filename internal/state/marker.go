@@ -3,16 +3,23 @@ package state
 
 import (
 	"encoding/json"
+	"io"
 	"log/slog"
 	"os"
 )
 
 func WriteStateFile(file *os.File, logger *slog.Logger, logs []any) {
-	data, err := json.MarshalIndent(logs, "", "\t")
-	if err != nil {
-		logger.Error("Error trying to marshal state", "File", file.Name(), "Error", err)
+	file.Seek(0, io.SeekEnd)
+	encoder := json.NewEncoder(file)
+
+	for _, l := range logs {
+		p := l.(struct {
+			Feed string            `json:"Feed"`
+			Sent map[string]string `json:"Sent"`
+		})
+		if err := encoder.Encode(p); err != nil {
+			logger.Error("Error trying to encode log", "File", file.Name(), "Feed", p.Feed, "PostID", p.Sent["ID"])
+		}
 	}
-	if _, err := file.Write(data); err != nil {
-		logger.Error("Error trying to write state", "File", file.Name(), "Error", err)
-	}
+	file.Seek(0, io.SeekStart)
 }
