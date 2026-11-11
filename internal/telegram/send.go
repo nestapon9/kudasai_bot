@@ -59,19 +59,17 @@ func SendPosts(c *Client, logger *slog.Logger, posts []feed.Post, feedStore stri
 }
 
 func SuccessfulSent(p feed.Post, feedStore string) struct {
-	Feed string
-	Sent []map[string]any
+	Feed string            `json:"Feed"`
+	Sent map[string]string `json:"Sent"`
 } {
 	return struct {
-		Feed string
-		Sent []map[string]any
+		Feed string            `json:"Feed"`
+		Sent map[string]string `json:"Sent"`
 	}{
 		Feed: feedStore,
-		Sent: []map[string]any{
-			{
-				"id":      p.ID,
-				"PubDate": p.PubDate,
-			},
+		Sent: map[string]string{
+			"ID":      p.ID,
+			"PubDate": p.PubDate.String(),
 		},
 	}
 }
