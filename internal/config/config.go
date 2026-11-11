@@ -21,6 +21,10 @@ const INTERNAL = "internal"
 const LOGS = "logs"
 const DATA = "data"
 
+var AcceptedCommands []string = []string{
+	"anime", "manga", "light novels", "cultura otaku", "novels",
+}
+
 type Config struct {
 	TOKEN_ID string
 	CHAT_ID  int
@@ -42,7 +46,7 @@ func Load(logger *slog.Logger) *Config {
 	return config
 }
 
-func OpenOrCreateLogFile(parentFolder string, filename string, flags int) (*os.File, error) {
+func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -50,6 +54,7 @@ func OpenOrCreateLogFile(parentFolder string, filename string, flags int) (*os.F
 	if err := os.MkdirAll(path.Join(cwd, parentFolder), 0750); err != nil {
 		return nil, err
 	}
+	flags := os.O_APPEND | os.O_CREATE | os.O_RDWR
 	FileCreation := path.Join(cwd, parentFolder, filename)
 	File, err := os.OpenFile(FileCreation, flags, 0o644)
 	if err != nil {
