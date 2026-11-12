@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 	"time"
 
@@ -16,20 +17,34 @@ import (
 
 func main() {
 
-	LogFile, err := config.OpenOrCreateLogFile(config.LOGFILEPATH)
+	LogFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.LOGFILEPATH)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the logging file: %v\n", err)
 		os.Exit(1)
 	}
 
-	ErrorFile, err := config.OpenOrCreateLogFile(config.ERRORFILEPATH)
+	ErrorFile, err := config.OpenOrCreateLogFile(path.Join(config.INTERNAL, config.LOGS), config.ERRORFILEPATH)
 	if err != nil {
 		fmt.Printf("Couldn't open/create the error logging file: %v\n", err)
 		os.Exit(1)
 	}
 
+	kudasaiState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEKUDASAI)
+	if err != nil {
+		fmt.Printf("Couldn't open/create the SomosKudasai state file: %v\n", err)
+		os.Exit(1)
+	}
+
+	annState, err := config.OpenOrCreateLogFile(config.DATA, config.STATEANN)
+	if err != nil {
+		fmt.Printf("Couldn't open/create the Anime Network state file: %v\n", err)
+		os.Exit(1)
+	}
+
 	defer LogFile.Close()
 	defer ErrorFile.Close()
+	defer kudasaiState.Close()
+	defer annState.Close()
 
 	logger := state.NewMultilogger(ErrorFile, LogFile)
 
@@ -49,6 +64,9 @@ func main() {
 	defer stop()
 
 	client := telegram.New(ctx, configLoaded)
+
+	client.StateAnn = annState
+	client.StateKudasai = kudasaiState
 
 	bot.BotLogic(client, logger)
 

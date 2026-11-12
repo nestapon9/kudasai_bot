@@ -11,10 +11,19 @@ import (
 )
 
 const URL = "https://api.telegram.org/bot"
-const FEED = "https://somoskudasai.com/noticias/feed/"
+const KUDASAIFEED = "https://somoskudasai.com/noticias/feed/"
+const ANNFEED = "https://www.animenewsnetwork.com/all/atom.xml?ann-edition=w"
 const ERRORFILEPATH = "ErrorFile.log"
 const LOGFILEPATH = "LogInfoFile.log"
+const STATEKUDASAI = "state_kudasai.json"
+const STATEANN = "state_animenetwork.json"
+const INTERNAL = "internal"
+const LOGS = "logs"
 const DATA = "data"
+
+var AcceptedCommands []string = []string{
+	"anime", "manga", "light novels", "cultura otaku", "novels",
+}
 
 type Config struct {
 	TOKEN_ID string
@@ -37,13 +46,17 @@ func Load(logger *slog.Logger) *Config {
 	return config
 }
 
-func OpenOrCreateLogFile(filename string) (*os.File, error) {
+func OpenOrCreateLogFile(parentFolder string, filename string) (*os.File, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
-	FileCreation := path.Join(cwd, DATA, filename)
-	File, err := os.OpenFile(FileCreation, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0o644)
+	if err := os.MkdirAll(path.Join(cwd, parentFolder), 0750); err != nil {
+		return nil, err
+	}
+	flags := os.O_APPEND | os.O_CREATE | os.O_RDWR
+	FileCreation := path.Join(cwd, parentFolder, filename)
+	File, err := os.OpenFile(FileCreation, flags, 0o644)
 	if err != nil {
 		return nil, err
 	}

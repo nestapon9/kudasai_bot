@@ -8,11 +8,13 @@ import (
 )
 
 type Post struct {
+	ID        string
 	Title     string
 	URL       string
-	PubDate   time.Time
 	Category  string
+	Section   string
 	PhotoURL  string
+	PubDate   time.Time
 	TotalPost int
 	PostNum   int
 }
@@ -30,4 +32,23 @@ type RSS struct {
 			} `xml:"content"`
 		} `xml:"item"`
 	} `xml:"channel"`
+}
+
+type AtomFeed struct {
+	Entry []struct {
+		Title struct {
+			Text string `xml:",chardata"`
+		} `xml:"title"`
+		Link struct {
+			Href string `xml:"href,attr"`
+		} `xml:"link"`
+		ID struct {
+			Text string `xml:",chardata"`
+		} `xml:"id"`
+		Published time.Time `xml:"published"`
+		Category  struct {
+			Term string `xml:"term,attr"`
+		} `xml:"category"`
+		Cmssection string `xml:"cmssection"`
+	} `xml:"entry"`
 }

@@ -3,14 +3,20 @@ package filter
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
+	"os"
+	"slices"
 	"sort"
-	"time"
 
-	"github.com/arturogood17/kudasai_bot/internal/config"
 	"github.com/arturogood17/kudasai_bot/internal/feed"
-	"github.com/arturogood17/kudasai_bot/internal/state"
+	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
+
+type StateLog struct {
+	FeedStore string
+	Sent      map[string]string
+}
 
 func OrderPostsByDate(posts []feed.Post) {
 	sort.Slice(posts, func(i int, j int) bool {
@@ -18,55 +24,45 @@ func OrderPostsByDate(posts []feed.Post) {
 	})
 }
 
-func readLogs() ([]map[string]any, error) {
-	logFile, err := config.OpenOrCreateLogFile(config.LOGFILEPATH)
-	if err != nil {
-		return nil, err
+func FilterBySent(logger *slog.Logger, posts []feed.Post, feedstate []StateLog) []feed.Post {
+	var latestPost []feed.Post
+	var IDList []string
+
+	for _, i := range feedstate {
+		IDList = append(IDList, i.Sent["ID"])
 	}
 
-	defer logFile.Close()
+	for _, p := range posts {
+		if !slices.Contains(IDList, p.ID) {
+			latestPost = append(latestPost, p)
+		}
+	}
 
-	var fullFile []map[string]any
-	decoder := json.NewDecoder(logFile)
+	return latestPost
+}
+
+func ReadState(client *telegram.Client, storeFeed string) ([]StateLog, error) {
+	var m []StateLog
+	if storeFeed != "/kudasai" && storeFeed != "/animenetwork" {
+		return nil, errors.New("Store feed not recognized")
+	}
+
+	var file *os.File
+	switch storeFeed {
+	case "/kudasai":
+		file = client.StateKudasai
+	case "/animenetwork":
+		file = client.StateAnn
+	}
+
+	decoder := json.NewDecoder(file)
 
 	for decoder.More() {
-		var data map[string]any
-		err := decoder.Decode(&data)
-		if err != nil {
-			return nil, err
+		var s StateLog
+		if err := decoder.Decode(&s); err != nil {
+			return m, err
 		}
-		if _, ok := data["Last_title_fetch"]; ok {
-			fullFile = append(fullFile, data)
-		}
+		m = append(m, s)
 	}
-
-	return fullFile, nil
-}
-
-func GetTimeMarker(logger *slog.Logger) (time.Time, error) {
-	var lastest time.Time
-
-	LogNews, err := readLogs()
-	if err != nil {
-		state.NewLogError(logger, time.Now(), "Error obtaining the marker", err)
-		return lastest, err
-	}
-
-	for _, l := range LogNews {
-		pTime := feed.PubDateParser(logger, l["LastestFetch"].(string), "News publish marker", time.RFC3339)
-		if pTime.After(lastest) {
-			lastest = pTime
-		}
-	}
-	return lastest, nil
-}
-
-func FilterByDate(logger *slog.Logger, latest time.Time, posts []feed.Post) []feed.Post {
-	var lastestPost []feed.Post
-	for _, p := range posts {
-		if latest.Before(p.PubDate) {
-			lastestPost = append(lastestPost, p)
-		}
-	}
-	return lastestPost
+	return m, nil
 }

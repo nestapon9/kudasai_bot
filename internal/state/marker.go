@@ -2,10 +2,24 @@
 package state
 
 import (
+	"encoding/json"
+	"io"
 	"log/slog"
-	"time"
+	"os"
 )
 
-func Marker(logger *slog.Logger, title string, TFetch time.Time) {
-	logger.Info("Marker Set", "Marker_date_set", time.Now(), "Last_title_fetch", title, "LastestFetch", TFetch)
+func WriteStateFile(file *os.File, logger *slog.Logger, logs []any) {
+	file.Seek(0, io.SeekEnd)
+	encoder := json.NewEncoder(file)
+
+	for _, l := range logs {
+		p := l.(struct {
+			Feed string            `json:"Feed"`
+			Sent map[string]string `json:"Sent"`
+		})
+		if err := encoder.Encode(p); err != nil {
+			logger.Error("Error trying to encode log", "File", file.Name(), "Feed", p.Feed, "PostID", p.Sent["ID"])
+		}
+	}
+	file.Seek(0, io.SeekStart)
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func BotLogic(c telegram.Client, logger *slog.Logger) {
+func BotLogic(c *telegram.Client, logger *slog.Logger) {
 	URL := fmt.Sprintf("%v%v/getUpdates", config.URL, c.Token)
 
 	type requestBody struct {
@@ -40,7 +40,7 @@ loop:
 				Timeout: 30,
 			}
 
-			resp, err := telegram.RequestSending(&c, c.Ctx, URL, "POST", payload)
+			resp, err := telegram.RequestSending(c, c.Ctx, URL, "POST", payload)
 			if errors.Is(err, context.Canceled) {
 				state.NewLogClosedInfo(logger, time.Now(), "Bot closed", c.Ctx.Err())
 				fmt.Println("\nClosing bot")
@@ -87,15 +87,15 @@ loop:
 				mostRecentMsg := upd.Result[len(upd.Result)-1]
 				offset = mostRecentMsg.UpdateID + 1
 				if !messageAuth(mostRecentMsg.Message.From.ID, c.Chat_id) {
-					c.SendMessage(logger, feed.Post{}, "Unavailable")
+					c.SendMessage(logger, feed.Post{}, "Unavailable", "")
 					state.NewLogError(logger, time.Now(), "Invalid user attempt", nil)
 					continue
 				}
 
 				CommandMsg := strings.ToLower(mostRecentMsg.Message.Text)
 
-				if CommandMsg != "/fetch" && CommandMsg != "/all" && CommandMsg != "/reset" {
-					c.SendMessage(logger, feed.Post{}, "Command not recognize")
+				if !strings.Contains(CommandMsg, "/kudasai") && !strings.Contains(CommandMsg, "/animenetwork") {
+					c.SendMessage(logger, feed.Post{}, "Feed store not recognized", "")
 					continue
 				}
 

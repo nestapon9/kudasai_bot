@@ -8,16 +8,24 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
 	"github.com/arturogood17/kudasai_bot/internal/state"
 )
 
-func Feed(c *http.Client, logger *slog.Logger) ([]Post, error) {
-	var rss RSS
+func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logger) ([]Post, error) {
+	var feed T
 	logger.Info("Feetching started", "Date_fetching_started", time.Now())
-	resp, err := c.Get(config.FEED)
+	var urlfeed string
+	switch storeFeed {
+	case "/kudasai":
+		urlfeed = config.KUDASAIFEED
+	case "/animenetwork":
+		urlfeed = config.ANNFEED
+	}
+	resp, err := c.Get(urlfeed)
 	if err != nil {
 		state.NewLogError(logger, time.Now(), "Unable to obtain Kudasai feed", err)
 		return nil, err
@@ -32,30 +40,46 @@ func Feed(c *http.Client, logger *slog.Logger) ([]Post, error) {
 	dataAfterProcessing := pattern.ReplaceAll(dataBeforeProcessing, []byte("&amp;"))
 	data := bytes.NewReader(dataAfterProcessing)
 
-	decoder := xml.NewDecoder(data)
-
-	if err := decoder.Decode(&rss); err != nil {
-		state.NewLogError(logger, time.Now(), "Unable parse xml file", err)
+	if err := xml.NewDecoder(data).Decode(&feed); err != nil {
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 
-	return Posts(logger, rss), err
+	posts, totalNews := Posts(logger, feed)
+	logger.Info("Feed fetched", "Total news fetched", totalNews)
 
+	return posts, nil
 }
 
-func Posts(logger *slog.Logger, r RSS) []Post {
+func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 	var P []Post
-	for _, post := range r.Channel.Item {
+	if rss, ok := posts.(RSS); ok {
+		for _, p := range rss.Channel.Item {
+			np := Post{
+				ID:       p.Link,
+				Title:    p.Title,
+				URL:      p.Link,
+				PubDate:  PubDateParser(logger, p.PubDate, p.Title, time.RFC1123Z),
+				Category: strings.ToLower(p.Category),
+				PhotoURL: p.Content.URL,
+			}
+			P = append(P, np)
+		}
+		return P, len(P)
+	}
+	atom, _ := posts.(AtomFeed)
+	for _, p := range atom.Entry {
 		np := Post{
-			Title:    post.Title,
-			URL:      post.Link,
-			PubDate:  PubDateParser(logger, post.PubDate, post.Title, time.RFC1123Z),
-			Category: post.Category,
-			PhotoURL: post.Content.URL,
+			ID:       p.ID.Text,
+			Title:    p.Title.Text,
+			URL:      p.Link.Href,
+			PubDate:  p.Published,
+			Category: strings.ToLower(p.Category.Term),
+			Section:  p.Cmssection,
+			PhotoURL: "",
 		}
 		P = append(P, np)
 	}
-	return P
+	return P, len(P)
 }

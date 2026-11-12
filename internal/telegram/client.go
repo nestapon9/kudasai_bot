@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 	"unicode/utf8"
 
@@ -16,14 +17,16 @@ import (
 )
 
 type Client struct {
-	Clt     *http.Client
-	Ctx     context.Context
-	Token   string
-	Chat_id int
+	Clt          *http.Client
+	Ctx          context.Context
+	Token        string
+	Chat_id      int
+	StateKudasai *os.File
+	StateAnn     *os.File
 }
 
-func New(ctx context.Context, c *config.Config) Client {
-	return Client{
+func New(ctx context.Context, c *config.Config) *Client {
+	return &Client{
 		Token:   c.TOKEN_ID,
 		Chat_id: c.CHAT_ID,
 		Clt:     &http.Client{Timeout: 45 * time.Second},
@@ -31,17 +34,19 @@ func New(ctx context.Context, c *config.Config) Client {
 	}
 }
 
-func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message string) error {
+func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedStore string) error {
 	type content struct {
-		Text    string `json:"text"`
-		Chat_ID int    `json:"chat_id"`
+		Text      string `json:"text"`
+		Chat_ID   int    `json:"chat_id"`
+		ParseMode string `json:"parse_mode"`
 	}
 
 	URL := fmt.Sprintf("%v%v/sendMessage", config.URL, c.Token)
 
 	payload := content{
-		Text:    message,
-		Chat_ID: c.Chat_id,
+		Text:      message,
+		Chat_ID:   c.Chat_id,
+		ParseMode: "HTML",
 	}
 
 	resp, err := RequestSending(c, context.Background(), URL, "POST", payload)
@@ -50,16 +55,14 @@ func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message string
 		return err
 	}
 
-	if post != (feed.Post{}) {
-		LogPostSentAndMarker(logger, time.Now(), post)
-	}
+	logger.Info("Sending posts", "Sent", fmt.Sprintf("%v/%v", post.PostNum+1, post.TotalPost))
 
 	defer resp.Body.Close()
 
 	return nil
 }
 
-func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post) error {
+func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post, feedStore string) error {
 	type content struct {
 		Photo     string `json:"photo"`
 		Caption   string `json:"caption"`
@@ -86,10 +89,6 @@ func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post) error {
 	if err != nil {
 		state.NewLogError(logger, time.Now(), "Error trying to send the request", nil)
 		return err
-	}
-
-	if post != (feed.Post{}) {
-		LogPostSentAndMarker(logger, time.Now(), post)
 	}
 
 	defer resp.Body.Close()
@@ -125,9 +124,4 @@ func RequestSending(c *Client, ctx context.Context, URL string, method string, p
 		return nil, err
 	}
 	return resp, nil
-}
-
-func LogPostSentAndMarker(logger *slog.Logger, t time.Time, p feed.Post) {
-	state.NewLogPostSuccess(logger, time.Now(), p.PubDate, fmt.Sprintf("Sent %d/%d. Last sent (title) {%s}", p.PostNum+1, p.TotalPost, p.Title))
-	state.Marker(logger, p.Title, p.PubDate)
 }
