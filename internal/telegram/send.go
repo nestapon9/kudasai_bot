@@ -35,17 +35,18 @@ func SendPosts(c *Client, logger *slog.Logger, posts []feed.Post, feedStore stri
 			} else {
 				logs = append(logs, SuccessfulSent(p, feedStore))
 			}
-		}
-		if err := c.SendPhoto(logger, p, feedStore); err != nil {
-			logger.Warn(fmt.Sprintf("Failed to send (title) {%s}. Trying just text message", p.Title), "Warning_date", time.Now(), "Error", err)
-			if err = c.SendMessage(logger, p, msg, feedStore); err != nil {
-				state.NewLogError(logger, time.Now(), fmt.Sprintf("Sent %d/%d. Failed to send (title) {%s}", i, numPosts, p.Title), err)
-				break
+		} else {
+			if err := c.SendPhoto(logger, p, feedStore); err != nil {
+				logger.Warn(fmt.Sprintf("Failed to send (title) {%s}. Trying just text message", p.Title), "Warning_date", time.Now(), "Error", err)
+				if err = c.SendMessage(logger, p, msg, feedStore); err != nil {
+					state.NewLogError(logger, time.Now(), fmt.Sprintf("Sent %d/%d. Failed to send (title) {%s}", i, numPosts, p.Title), err)
+					break
+				} else {
+					logs = append(logs, SuccessfulSent(p, feedStore))
+				}
 			} else {
 				logs = append(logs, SuccessfulSent(p, feedStore))
 			}
-		} else {
-			logs = append(logs, SuccessfulSent(p, feedStore))
 		}
 	}
 
