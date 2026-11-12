@@ -10,13 +10,23 @@ import (
 
 func FetchAll(c *telegram.Client, logger *slog.Logger, posts []feed.Post, feedStore string, feedState []filter.StateLog) error {
 	filter.OrderPostsByDate(posts)
-	if feedStore == "/animenetwork" {
-		if len(posts) > 20 {
-			posts = posts[len(posts)-21:]
+	toSent := filter.FilterBySent(logger, posts, feedState)
+	if len(toSent) == 0 {
+		err := c.SendMessage(logger, feed.Post{}, "Nothing to fetch", feedStore)
+		if err != nil {
+			return err
 		}
 	}
-	toSent := filter.FilterBySent(logger, posts, feedState)
-	err := telegram.SendPosts(c, logger, toSent, feedStore)
+	var finalAllList []feed.Post
+	for _, s := range toSent {
+		if s.Section != "Review" {
+			finalAllList = append(finalAllList, s)
+		}
+	}
+	if feedStore == "/animenetwork" && len(finalAllList) > 20 {
+		finalAllList = finalAllList[len(finalAllList)-21:]
+	}
+	err := telegram.SendPosts(c, logger, finalAllList, feedStore)
 	if err != nil {
 		return err
 	}
