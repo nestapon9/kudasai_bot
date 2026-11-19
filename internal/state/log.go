@@ -57,10 +57,6 @@ func NewHandler(FileToLog io.Writer, level slog.Level) *slog.JSONHandler {
 	return slog.NewJSONHandler(FileToLog, &slog.HandlerOptions{Level: level})
 }
 
-func NewLogError(logger *slog.Logger, t time.Time, message string, err error) {
-	logger.Error(message, "Date", t, "Error", err)
-}
-
 func NewLogClosedInfo(logger *slog.Logger, t time.Time, message string, err error) {
 	logger.Info(message, "Time_of_close", t, "Cause", err)
 }

@@ -4,9 +4,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
-	"time"
 
-	"github.com/arturogood17/kudasai_bot/internal/state"
 	viper "github.com/spf13/viper"
 )
 
@@ -40,7 +38,7 @@ func Load(logger *slog.Logger) *Config {
 
 	err := viper.Unmarshal(&config)
 	if err != nil {
-		state.NewLogError(logger, time.Now(), "Unable to unmarshal", err)
+		logger.Error("Unable to unmarshal", "Error", err)
 		return nil
 	}
 	return config

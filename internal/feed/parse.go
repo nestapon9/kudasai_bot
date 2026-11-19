@@ -2,17 +2,14 @@
 package feed
 
 import (
-	"fmt"
 	"log/slog"
 	"time"
-
-	"github.com/arturogood17/kudasai_bot/internal/state"
 )
 
 func PubDateParser(logger *slog.Logger, pubDate string, title string, timeFormat string) time.Time {
 	t, err := time.Parse(timeFormat, pubDate)
 	if err != nil {
-		state.NewLogError(logger, time.Now(), fmt.Sprintf("Error parsing date for %s", title), err)
+		logger.Error("Error parsing date", "Post", title, "Error", err)
 		return time.Time{}
 	}
 	return t

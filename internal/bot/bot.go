@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
-	"github.com/arturogood17/kudasai_bot/internal/feed"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 	"github.com/arturogood17/kudasai_bot/internal/state"
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
@@ -46,7 +46,7 @@ loop:
 				fmt.Println("\nClosing bot")
 				break loop
 			} else if err != nil {
-				state.NewLogError(logger, time.Now(), "Error trying to send the request for long polling", nil)
+				logger.Error("Error trying to send the request for long polling")
 				time.Sleep(retryTime)
 				retryTime += 1 * time.Second
 				if retryTime >= 30*time.Second {
@@ -58,12 +58,12 @@ loop:
 			retryTime = 1 * time.Second
 
 			if resp.StatusCode >= 400 && resp.StatusCode <= 428 || resp.StatusCode >= 430 && resp.StatusCode <= 499 {
-				state.NewLogError(logger, time.Now(), fmt.Sprintf("Client error: %d", resp.StatusCode), nil)
+				logger.Error("Client error", "Status code", resp.StatusCode)
 				fmt.Printf("Client error: %d\n", resp.StatusCode)
 				fmt.Println("Closing bot")
 				return
 			} else if resp.StatusCode == 429 || resp.StatusCode >= 500 {
-				state.NewLogError(logger, time.Now(), fmt.Sprintf("Server error: %d", resp.StatusCode), nil)
+				logger.Error("Server error", "Status code", resp.StatusCode)
 				time.Sleep(retryTime)
 				retryTime += 1 * time.Second
 				if retryTime >= 30*time.Second {
@@ -77,7 +77,7 @@ loop:
 			var upd Updates
 
 			if err = json.NewDecoder(resp.Body).Decode(&upd); err != nil {
-				state.NewLogError(logger, time.Now(), "Error trying to decode the response from server", err)
+				logger.Error("Error trying to decode the response from server", "Error", err)
 				return
 			}
 
@@ -87,20 +87,20 @@ loop:
 				mostRecentMsg := upd.Result[len(upd.Result)-1]
 				offset = mostRecentMsg.UpdateID + 1
 				if !messageAuth(mostRecentMsg.Message.From.ID, c.Chat_id) {
-					c.SendMessage(logger, feed.Post{}, "Unavailable", "")
-					state.NewLogError(logger, time.Now(), "Invalid user attempt", nil)
+					c.SendMessage(logger, models.Post{}, "Unavailable", "")
+					logger.Error("Invalid user attempt", "User", mostRecentMsg.Message.From.ID)
 					continue
 				}
 
 				CommandMsg := strings.ToLower(mostRecentMsg.Message.Text)
 
 				if !strings.Contains(CommandMsg, "/kudasai") && !strings.Contains(CommandMsg, "/animenetwork") {
-					c.SendMessage(logger, feed.Post{}, "Feed store not recognized", "")
+					c.SendMessage(logger, models.Post{}, "Feed store not recognized", "")
 					continue
 				}
 
 				if err := CommandRun(logger, c, CommandMsg); err != nil {
-					state.NewLogError(logger, time.Now(), "Error serving posts", err)
+					logger.Error("Error serving posts", "Error", err)
 					offset = mostRecentMsg.UpdateID
 					time.Sleep(retryTime)
 					retryTime += 1 * time.Second

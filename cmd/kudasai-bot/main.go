@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
-	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/bot"
 	"github.com/arturogood17/kudasai_bot/internal/config"
@@ -56,7 +55,7 @@ func main() {
 
 	if configLoaded.CHAT_ID == 0 || configLoaded.TOKEN_ID == "" {
 		fmt.Println("Failed to load one of the secrets")
-		state.NewLogError(logger, time.Now(), "Failed to load one of the secrets", nil)
+		logger.Error("Failed to load one of the secrets")
 		os.Exit(1)
 	}
 
