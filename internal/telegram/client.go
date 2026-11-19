@@ -12,15 +12,18 @@ import (
 	"unicode/utf8"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
-	"github.com/arturogood17/kudasai_bot/internal/feed"
-	"github.com/arturogood17/kudasai_bot/internal/state"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 )
 
 type Client struct {
-	Clt          *http.Client
-	Ctx          context.Context
-	Token        string
-	Chat_id      int
+	Clt *http.Client
+	Ctx context.Context
+	Files
+	Token   string
+	Chat_id int
+}
+
+type Files struct {
 	StateKudasai *os.File
 	StateAnn     *os.File
 }
@@ -34,7 +37,7 @@ func New(ctx context.Context, c *config.Config) *Client {
 	}
 }
 
-func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedStore string) error {
+func (c *Client) SendMessage(logger *slog.Logger, post models.Post, message, feedStore string) error {
 	type content struct {
 		Text      string `json:"text"`
 		Chat_ID   int    `json:"chat_id"`
@@ -51,7 +54,7 @@ func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedS
 
 	resp, err := RequestSending(c, context.Background(), URL, "POST", payload)
 	if err != nil {
-		state.NewLogError(logger, time.Now(), "Error trying to send the request", nil)
+		logger.Error("Error trying to send the request")
 		return err
 	}
 
@@ -62,7 +65,7 @@ func (c *Client) SendMessage(logger *slog.Logger, post feed.Post, message, feedS
 	return nil
 }
 
-func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post, feedStore string) error {
+func (c *Client) SendPhoto(logger *slog.Logger, post models.Post, feedStore string) error {
 	type content struct {
 		Photo     string `json:"photo"`
 		Caption   string `json:"caption"`
@@ -87,7 +90,7 @@ func (c *Client) SendPhoto(logger *slog.Logger, post feed.Post, feedStore string
 
 	resp, err := RequestSending(c, context.Background(), URL, "POST", payload)
 	if err != nil {
-		state.NewLogError(logger, time.Now(), "Error trying to send the request", nil)
+		logger.Error("Error trying to send the request")
 		return err
 	}
 
