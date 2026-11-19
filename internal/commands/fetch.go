@@ -18,6 +18,8 @@ func Fetch(c *telegram.Client, logger *slog.Logger, category, feedStore string, 
 		return nil
 	}
 
+	lastestPosts = AnimeNetworkLimit(feedStore, lastestPosts)
+
 	filter.OrderPostsByDate(lastestPosts)
 
 	if err := telegram.SendPosts(c, logger, lastestPosts, feedStore); err != nil {

@@ -23,12 +23,17 @@ func FetchAll(c *telegram.Client, logger *slog.Logger, posts []models.Post, feed
 			finalAllList = append(finalAllList, s)
 		}
 	}
-	if feedStore == "/animenetwork" && len(finalAllList) > 20 {
-		finalAllList = finalAllList[len(finalAllList)-21:]
-	}
+	finalAllList = AnimeNetworkLimit(feedStore, finalAllList)
 	err := telegram.SendPosts(c, logger, finalAllList, feedStore)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func AnimeNetworkLimit(feedStore string, finalList []models.Post) []models.Post {
+	if feedStore == "/animenetwork" && len(finalList) > 20 {
+		return finalList[len(finalList)/2:]
+	}
+	return finalList
 }
