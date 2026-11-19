@@ -7,18 +7,6 @@ import (
 	"time"
 )
 
-type Post struct {
-	ID        string
-	Title     string
-	URL       string
-	Category  string
-	Section   string
-	PhotoURL  string
-	PubDate   time.Time
-	TotalPost int
-	PostNum   int
-}
-
 type RSS struct {
 	XMLName xml.Name `xml:"rss"`
 	Channel struct {
