@@ -2,30 +2,22 @@
 package filter
 
 import (
-	"encoding/json"
-	"errors"
 	"log/slog"
-	"os"
 	"slices"
 	"sort"
 
-	"github.com/arturogood17/kudasai_bot/internal/feed"
-	"github.com/arturogood17/kudasai_bot/internal/telegram"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 )
 
-type StateLog struct {
-	FeedStore string
-	Sent      map[string]string
-}
-
-func OrderPostsByDate(posts []feed.Post) {
+func OrderPostsByDate(posts []models.Post) {
 	sort.Slice(posts, func(i int, j int) bool {
 		return posts[i].PubDate.Before(posts[j].PubDate)
 	})
 }
 
-func FilterBySent(logger *slog.Logger, posts []feed.Post, feedstate []StateLog) []feed.Post {
-	var latestPost []feed.Post
+func FilterBySent(logger *slog.Logger, posts []models.Post, feedstate []models.StateLog) []models.Post {
+	var latestPost []models.Post
+
 	var IDList []string
 
 	for _, i := range feedstate {
@@ -39,30 +31,4 @@ func FilterBySent(logger *slog.Logger, posts []feed.Post, feedstate []StateLog) 
 	}
 
 	return latestPost
-}
-
-func ReadState(client *telegram.Client, storeFeed string) ([]StateLog, error) {
-	var m []StateLog
-	if storeFeed != "/kudasai" && storeFeed != "/animenetwork" {
-		return nil, errors.New("Store feed not recognized")
-	}
-
-	var file *os.File
-	switch storeFeed {
-	case "/kudasai":
-		file = client.StateKudasai
-	case "/animenetwork":
-		file = client.StateAnn
-	}
-
-	decoder := json.NewDecoder(file)
-
-	for decoder.More() {
-		var s StateLog
-		if err := decoder.Decode(&s); err != nil {
-			return m, err
-		}
-		m = append(m, s)
-	}
-	return m, nil
 }
