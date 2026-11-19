@@ -3,18 +3,18 @@ package commands
 import (
 	"log/slog"
 
-	"github.com/arturogood17/kudasai_bot/internal/feed"
 	"github.com/arturogood17/kudasai_bot/internal/filter"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
-func Fetch(c *telegram.Client, logger *slog.Logger, category, feedStore string, posts []feed.Post, feedState []filter.StateLog) error {
+func Fetch(c *telegram.Client, logger *slog.Logger, category, feedStore string, posts []models.Post, feedState []models.StateLog) error {
 	filteredPosts := filter.FilterByCategory(posts, category)
 
 	lastestPosts := filter.FilterBySent(logger, filteredPosts, feedState)
 	if len(lastestPosts) == 0 {
 		logger.Info("Nothing to fetch")
-		c.SendMessage(logger, feed.Post{}, "Nothing to fetch", "")
+		c.SendMessage(logger, models.Post{}, "Nothing to fetch", "")
 		return nil
 	}
 

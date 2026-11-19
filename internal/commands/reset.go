@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
-	"github.com/arturogood17/kudasai_bot/internal/feed"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 	"github.com/arturogood17/kudasai_bot/internal/telegram"
 )
 
@@ -26,7 +26,7 @@ func Reset(c *telegram.Client, logger *slog.Logger, feedStore string) error {
 		return err
 	}
 
-	if err := c.SendMessage(logger, feed.Post{}, "News reseted", feedStore); err != nil {
+	if err := c.SendMessage(logger, models.Post{}, "News reseted", feedStore); err != nil {
 		return err
 	}
 	return nil
