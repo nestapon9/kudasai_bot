@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/arturogood17/kudasai_bot/internal/config"
-	"github.com/arturogood17/kudasai_bot/internal/state"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 )
 
-func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logger) ([]Post, error) {
+func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logger) ([]models.Post, error) {
 	var feed T
 	logger.Info("Feetching started", "Date_fetching_started", time.Now())
 	var urlfeed string
@@ -27,7 +27,7 @@ func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logge
 	}
 	resp, err := c.Get(urlfeed)
 	if err != nil {
-		state.NewLogError(logger, time.Now(), "Unable to obtain Kudasai feed", err)
+		logger.Error("Unable to obtain Kudasai feed", "Error", err)
 		return nil, err
 	}
 	dataBeforeProcessing, err := io.ReadAll(resp.Body)
@@ -52,11 +52,11 @@ func Feed[T RSS | AtomFeed](c *http.Client, storeFeed string, logger *slog.Logge
 	return posts, nil
 }
 
-func Posts(logger *slog.Logger, posts any) ([]Post, int) {
-	var P []Post
+func Posts(logger *slog.Logger, posts any) ([]models.Post, int) {
+	var P []models.Post
 	if rss, ok := posts.(RSS); ok {
 		for _, p := range rss.Channel.Item {
-			np := Post{
+			np := models.Post{
 				ID:       p.Link,
 				Title:    p.Title,
 				URL:      p.Link,
@@ -70,7 +70,7 @@ func Posts(logger *slog.Logger, posts any) ([]Post, int) {
 	}
 	atom, _ := posts.(AtomFeed)
 	for _, p := range atom.Entry {
-		np := Post{
+		np := models.Post{
 			ID:       p.ID.Text,
 			Title:    p.Title.Text,
 			URL:      p.Link.Href,

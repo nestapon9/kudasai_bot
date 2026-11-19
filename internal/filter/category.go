@@ -2,23 +2,26 @@
 package filter
 
 import (
-	"github.com/arturogood17/kudasai_bot/internal/feed"
+	"github.com/arturogood17/kudasai_bot/internal/models"
 )
 
-const Manga = "Manga"
-const Anime = "Anime"
-const Novelas = "Novelas Ligeras"
+const Manga = "manga"
+const Anime = "anime"
+const Novelas = "novelas ligeras"
+const Novels = "novels"
 
-func FilterByCategory(posts []feed.Post, category string) []feed.Post {
-	var filteredPosts []feed.Post
+func FilterByCategory(posts []models.Post, category string) []models.Post {
+
+	var filteredPosts []models.Post
 	for _, p := range posts {
 		if category != "big three" {
 			if p.Category == category && p.Section != "Review" {
 				filteredPosts = append(filteredPosts, p)
 			}
-		} else if (p.Category == Manga || p.Category == Anime || p.Category == Novelas) && p.Section != "Review" {
+		} else if (p.Category == Manga || p.Category == Anime || p.Category == Novelas || p.Category == Novels) && p.Section != "Review" {
 			filteredPosts = append(filteredPosts, p)
 		}
 	}
+
 	return filteredPosts
 }
